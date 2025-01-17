@@ -1,0 +1,68 @@
+package main
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
+
+// groupAndSortTransactions groups transactions by their "Output Shard" value
+// and returns a sorted 2D slice of transactions grouped by shard.
+func groupAndSortTransactions(txBatchList []string) [][]string {
+	// 创建一个 map，用于按 Output Shard 分组交易
+	groupedTx := make(map[string][]string)
+
+	// 遍历交易列表，按 Output Shard 分组
+	for _, tx := range txBatchList {
+		// 提取 Output Shard 的值
+		// "【......Output Shard: 0, Output Valid: 1 >】那个表明输出分片的数字后面固定跟19个字符
+		shardStart := strings.Index(tx, "Output Shard: ") + len("Output Shard: ")
+		shardEnd := len(tx) - 19 // 假设固定去掉 19 个字符
+		outputShard := tx[shardStart:shardEnd]
+
+		// 将交易添加到对应分组
+		if _, exists := groupedTx[outputShard]; !exists {
+			groupedTx[outputShard] = []string{}
+		}
+		groupedTx[outputShard] = append(groupedTx[outputShard], tx)
+	}
+
+	// 对分组的 Output Shard 进行排序
+	var sortedShards []string
+	for shard := range groupedTx {
+		sortedShards = append(sortedShards, shard)
+	}
+	sort.Strings(sortedShards) // 按字典序对 shard 排序
+
+	// 构造最终的输出结果
+	var result [][]string
+	for _, shard := range sortedShards {
+		result = append(result, groupedTx[shard])
+	}
+
+	return result
+}
+
+func main() {
+	// Example transaction list
+	txBatchList := []string{
+		"<Dummy TX: DXMEZ80U753ISQPWEIRBZSVZ2ALAU9H6, Userset: 0, Input Shard: [0], Input Valid: [1], Output Shard: 0, Output Valid: 1 >",
+		"<Dummy TX: YUA8H7D9O52UEJK4KFLP1NRWZAVIT3CX, Userset: 1, Input Shard: [1], Input Valid: [1], Output Shard: 2, Output Valid: 1 >",
+		"<Dummy TX: ZXPLOQN28E7UJMBDKFIYAH6WR3VT951C, Userset: 2, Input Shard: [2], Input Valid: [1], Output Shard: 1, Output Valid: 1 >",
+		"<Dummy TX: ZXPLOQN28E7UJMBDKFIYAH6WR3VT951C, Userset: 2, Input Shard: [2], Input Valid: [1], Output Shard: 1, Output Valid: 1 >",
+		"<Dummy TX: ZXPLOQN28E7UJMBDKFIYAH6WR3VT951C, Userset: 2, Input Shard: [2], Input Valid: [1], Output Shard: 1, Output Valid: 1 >",
+		"<Dummy TX: ZXPLOQN28E7UJMBDKFIYAH6WR3VT951C, Userset: 2, Input Shard: [2], Input Valid: [1], Output Shard: 1, Output Valid: 1 >",
+		"<Dummy TX: ZXPLOQN28E7UJMBDKFIYAH6WR3VT951C, Userset: 2, Input Shard: [2], Input Valid: [1], Output Shard: 1, Output Valid: 1 >",
+		"<Dummy TX: ZXPLOQN28E7UJMBDKFIYAH6WR3VT951C, Userset: 2, Input Shard: [2], Input Valid: [1], Output Shard: 1, Output Valid: 1 >",
+		"<Dummy TX: EXAMPLE1234567890ABCDEFGHIJKLMNO, Userset: 0, Input Shard: [0], Input Valid: [1], Output Shard: 0, Output Valid: 1 >",
+	}
+
+	// Group and sort the transactions
+	result := groupAndSortTransactions(txBatchList)
+
+	// Print the grouped and sorted result
+	fmt.Println("Grouped and Sorted Transactions:")
+	for _, group := range result {
+		fmt.Println(group)
+	}
+}

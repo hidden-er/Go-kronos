@@ -1,0 +1,6 @@
+.idea/
+db/
+log/
+cross_txs.db
+configs/
+
