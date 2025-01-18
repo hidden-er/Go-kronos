@@ -1,6 +1,6 @@
 .idea/
-db/
+.vscode/
 log/
-cross_txs.db
+*.db
 configs/
 
