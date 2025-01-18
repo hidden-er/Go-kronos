@@ -3,14 +3,15 @@ package core
 import (
 	"Chamael/pkg/protobuf"
 	"Chamael/pkg/utils"
-	"google.golang.org/protobuf/proto"
 	"io"
 	"log"
 	"net"
 	"time"
+
+	"google.golang.org/protobuf/proto"
 )
 
-//MakeReceiveChannel returns a channel receiving messages
+// MakeReceiveChannel returns a channel receiving messages
 func MakeReceiveChannel(port string) chan *protobuf.Message {
 	var addr *net.TCPAddr
 	var lis *net.TCPListener
@@ -36,7 +37,7 @@ func MakeReceiveChannel(port string) chan *protobuf.Message {
 	receiveChannel := make(chan *protobuf.Message, MAXMESSAGE)
 	go func() {
 
-		/////filename := fmt.Sprintf("/home/hiddener/Chamael/log/(Received)%s.log", lis.Addr())
+		/////filename := fmt.Sprintf("/home/hyx/Chamael/log/(Received)%s.log", lis.Addr())
 		/////file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		/////fileLogger := log.New(file, "[MessageLogger] ", log.Ldate|log.Ltime|log.Lmicroseconds)
 		for {
@@ -49,7 +50,7 @@ func MakeReceiveChannel(port string) chan *protobuf.Message {
 			//Once connect to a node, make a sub-handle func to handle this connection
 			go func(conn *net.TCPConn, channel chan *protobuf.Message) {
 				/*
-					filename := fmt.Sprintf("/home/hiddener/Chamael/log/%s.log", conn.LocalAddr())
+					filename := fmt.Sprintf("/home/hyx/Chamael/log/%s.log", conn.LocalAddr())
 					file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 					fileLogger := log.New(file, "[FileLogger] ", log.Ldate|log.Ltime)
 					fileLogger.Println("Logging to a file")

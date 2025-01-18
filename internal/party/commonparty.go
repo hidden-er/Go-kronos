@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-//CommonParty is a struct of normal consensus parties
+// CommonParty is a struct of normal consensus parties
 type CommonParty struct {
 	N                 uint32
 	F                 uint32
@@ -24,7 +24,7 @@ type CommonParty struct {
 	ShardList         []int //节点负责沟通的分片
 }
 
-//NewCommonParty return a new common party object
+// NewCommonParty return a new common party object
 func NewCommonParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid uint32, ipList []string, portList []string, ShardList []int) *CommonParty {
 	p := CommonParty{
 		N:            N,
@@ -42,15 +42,20 @@ func NewCommonParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid u
 	return &p
 }
 
-//InitReceiveChannel setup the listener and Init the receiveChannel
+// InitReceiveChannel setup the listener and Init the receiveChannel
 func (p *CommonParty) InitReceiveChannel() error {
 	p.dispatcheChannels = core.MakeDispatcheChannels(core.MakeReceiveChannel(p.portList[p.PID]), p.N)
 	return nil
 }
 
-//InitSendChannel setup the sender and Init the sendChannel, please run this after initializing all party's receiveChannel
+// InitSendChannel setup the sender and Init the sendChannel, please run this after initializing all party's receiveChannel
 func (p *CommonParty) InitSendChannel() error {
-	dirname := fmt.Sprintf("/home/hiddener/Chamael/log/%s", p.ipList[p.PID]+":"+p.portList[p.PID])
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	dirname := fmt.Sprintf(homeDir+"/Chamael/log/%s", p.ipList[p.PID]+":"+p.portList[p.PID])
 	os.Mkdir(dirname, 0755)
 	for i := uint32(0); i < p.N*p.m; i++ {
 		p.sendChannels[i] = core.MakeSendChannel(p.ipList[i], p.portList[i], dirname)
@@ -58,7 +63,7 @@ func (p *CommonParty) InitSendChannel() error {
 	return nil
 }
 
-//Send a message to party des
+// Send a message to party des
 func (p *CommonParty) Send(m *protobuf.Message, des uint32) error {
 	if !p.checkInit() {
 		return errors.New("This party hasn't been initialized")
@@ -70,7 +75,7 @@ func (p *CommonParty) Send(m *protobuf.Message, des uint32) error {
 	return errors.New("Destination id is too large")
 }
 
-//Broadcast a message to all parties
+// Broadcast a message to all parties
 func (p *CommonParty) Broadcast(m *protobuf.Message) error {
 	if !p.checkInit() {
 		return errors.New("This party hasn't been initialized")
@@ -84,7 +89,7 @@ func (p *CommonParty) Broadcast(m *protobuf.Message) error {
 	return nil
 }
 
-//Broadcast a message to parties in the same shard
+// Broadcast a message to parties in the same shard
 func (p *CommonParty) Intra_Broadcast(m *protobuf.Message) error {
 	if !p.checkInit() {
 		return errors.New("This party hasn't been initialized")
@@ -98,7 +103,7 @@ func (p *CommonParty) Intra_Broadcast(m *protobuf.Message) error {
 	return nil
 }
 
-//Broadcast a message to parties in a specified shard
+// Broadcast a message to parties in a specified shard
 func (p *CommonParty) Shard_Broadcast(m *protobuf.Message, des uint32) error {
 	if !p.checkInit() {
 		return errors.New("This party hasn't been initialized")
@@ -112,7 +117,7 @@ func (p *CommonParty) Shard_Broadcast(m *protobuf.Message, des uint32) error {
 	return nil
 }
 
-//GetMessage Try to get a message according to messageType, ID
+// GetMessage Try to get a message according to messageType, ID
 func (p *CommonParty) GetMessage(messageType string, ID []byte) chan *protobuf.Message {
 	value1, _ := p.dispatcheChannels.LoadOrStore(messageType, new(sync.Map))
 

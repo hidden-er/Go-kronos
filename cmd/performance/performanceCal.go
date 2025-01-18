@@ -101,7 +101,13 @@ func AccumulateTPSStats(dir string) (int, int, int, float64, float64, float64, e
 }
 
 func main() {
-	totalTx, internalTx, crossShardTx, totalTps, internalTps, crossShardTps, err := AccumulateTPSStats("/home/hiddener/Chamael/log/")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error getting home directory:", err)
+		return
+	}
+
+	totalTx, internalTx, crossShardTx, totalTps, internalTps, crossShardTps, err := AccumulateTPSStats(homeDir + "/Chamael/log/")
 	if err != nil {
 		fmt.Println("Error accumulating stats:", err)
 	} else {

@@ -52,8 +52,13 @@ func main() {
 		Txs = append(Txs, tx)
 	}
 
-	itxdb := fmt.Sprintf("/home/hiddener/Chamael/db/inter_txs_node%d.db", p.PID)
-	//fmt.Println(itxdb)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	itxdb := fmt.Sprintf(homeDir+"/Chamael/db/inter_txs_node%d.db", p.PID)
+	// fmt.Println(itxdb)
 	db.SaveTxsToSQL(Txs, itxdb)
 	fmt.Println("Inner-Shard Transactions saved to SQLite database.")
 
@@ -66,8 +71,8 @@ func main() {
 	*/
 
 	//time.Sleep(time.Second * time.Duration(c.PrepareTime/10))
-	//ctxdb := fmt.Sprintf("/home/hiddener/Chamael/cross_txs.db", p.PID)\
-	ctxdb := "/home/hiddener/Chamael/cross_txs.db"
+	//ctxdb := fmt.Sprintf("/home/hyx/Chamael/cross_txs.db", p.PID)\
+	ctxdb := homeDir + "/Chamael/cross_txs.db"
 
 	itx_inputChannel := make(chan []string, 1024)
 	ctx_inputChannel := make(chan []string, 1024)
@@ -94,7 +99,7 @@ func main() {
 	go bft.KronosProcess(p, c.TestEpochs, itx_inputChannel, ctx_inputChannel, outputChannel, timeChannel)
 
 	time.Sleep(time.Second * 15)
-	logger.CalculateTPS(c, *p, "/home/hiddener/Chamael/log/", timeChannel, outputChannel)
-	//logger.RenameHonest(c, *p, "/home/hiddener/Chamael/log/")
+	logger.CalculateTPS(c, *p, homeDir+"/Chamael/log/", timeChannel, outputChannel)
+	//logger.RenameHonest(c, *p, "/home/hyx/Chamael/log/")
 	log.Println("exit safely", p.PID)
 }

@@ -12,7 +12,7 @@ m="$2"
 B="$3"
 
 # Directory containing the config files
-config_dir="/home/hiddener/Chamael/configs"
+config_dir="$HOME/Chamael/configs"
 
 go run ./cmd/txsMaker --shard_num 3 --tx_num 1000 --Rrate 10
 

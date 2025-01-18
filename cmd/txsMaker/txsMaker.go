@@ -30,6 +30,10 @@ func main() {
 		Txs = append(Txs, tx)
 	}
 
-	db.SaveTxsToSQL(Txs, "/home/hiddener/Chamael/cross_txs.db")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	db.SaveTxsToSQL(Txs, homeDir+"/Chamael/cross_txs.db")
 	log.Println("Cross-Shard Transactions saved to SQLite database.")
 }
