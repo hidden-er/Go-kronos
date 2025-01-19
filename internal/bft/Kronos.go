@@ -9,10 +9,11 @@ import (
 	"Chamael/pkg/utils"
 	"bytes"
 	"fmt"
+	"time"
+
 	"go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/pairing/bn256"
 	"go.dedis.ch/kyber/v3/sign/bls"
-	"time"
 )
 
 // 按输入分片分类交易
@@ -74,15 +75,18 @@ func CategorizeTransactionsByOutputShard(transactions []string) (map[int][]strin
 }
 
 /*
-	有两个东西需要全程非阻塞监听,把内容放到对应Channel里：
-	1:别的分片发来的 完全未处理的 本分片为输入分片的交易,也就是TXs_Inform。
-		收到后什么都不用干,让它们躺在TXsInformChannel里就行了.
-		主进程在每个时期(开始后不久)完成TXs_Inform的发送之后 统一收菜
-	2:别的分片发来的 部分处理了的 本分片为输出分片的交易,也就是InputBFT_Result。
-		收到后验证树根聚合签名,验证默克尔树(注意有两个验证)
-		对它们进行处理,放到交易池中——若交易池中没有该交易则添加,然后把对应的输入分片标记为true
-		再把交易池中输入分片已经处理完了(输入分片元组全为true)的交易拿出来组装成InputResultTobeDoneChannel中
-		主进程在每个时期需要调用片内交易之前.统一收菜
+有两个东西需要全程非阻塞监听,把内容放到对应Channel里：
+1:别的分片发来的 完全未处理的 本分片为输入分片的交易,也就是TXs_Inform。
+
+	收到后什么都不用干,让它们躺在TXsInformChannel里就行了.
+	主进程在每个时期(开始后不久)完成TXs_Inform的发送之后 统一收菜
+
+2:别的分片发来的 部分处理了的 本分片为输出分片的交易,也就是InputBFT_Result。
+
+	收到后验证树根聚合签名,验证默克尔树(注意有两个验证)
+	对它们进行处理,放到交易池中——若交易池中没有该交易则添加,然后把对应的输入分片标记为true
+	再把交易池中输入分片已经处理完了(输入分片元组全为true)的交易拿出来组装成InputResultTobeDoneChannel中
+	主进程在每个时期需要调用片内交易之前.统一收菜
 */
 func TXs_Inform_Handler(p *party.HonestParty, e uint32, TXsInformChannel chan []string) {
 	var l []int
@@ -117,13 +121,13 @@ func InpufBFT_Result_Handler(p *party.HonestParty, e uint32, InputResultTobeDone
 			fmt.Println("AggSig(root) verification failed:", err)
 			return
 		}
-		/*
-			result := crypto.VerifyMerkleTreeProof(payload.Root, payload.Path, payload.Indicator, payload.Txs)
-			if result == false {
-				fmt.Println("MerkleTree verification failed")
-				return
-			}
-		*/
+
+		result := crypto.VerifyMerkleTreeProof(payload.Root, payload.Path, payload.Indicator, payload.Txs)
+		if result == false {
+			fmt.Println("MerkleTree verification failed")
+			return
+		}
+
 		if !seen[int(m.Sender)] {
 			l = append(l, int(m.Sender))
 			seen[int(m.Sender)] = true
@@ -240,7 +244,8 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 		txs_ctx2[int(p.Snumber)] = nil
 
 		//对于跨片交易,建立默克尔树,并对树根签名
-		mktree, _ := crypto.NewMerkleTree(utils.MapToSlice(txs_ctx2))
+		mktree, _ := crypto.NewMerkleTree(utils.MapToSlice(txs_ctx2, int(p.M)))
+		// fmt.Println("Shard num in txs_ctx2: ", len(utils.MapToSlice(txs_ctx2, int(p.M))))
 		//if is_coordinator == true {
 		//	fmt.Println("txs_out:", p.PID, txs_out, "\n\n\n\n\n\n\n\n\n")
 		//}
@@ -310,6 +315,8 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 					Aggpk:     utils.PointToBytes(aggPubKey),
 				})
 				p.Shard_Broadcast(TXsInformMesssage, i)
+				/* res := crypto.VerifyMerkleTreeProof(Root, path, indicator, txs_ctx2[int(i)])
+				fmt.Println("Self MerkleTree verification result:", res) */
 			}
 
 		} else {

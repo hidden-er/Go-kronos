@@ -38,13 +38,13 @@ func (i *implContent) Equals(other m.Content) (bool, error) {
 	return false, nil
 }
 
-//MerkleTree is a kind of vector commitment
+// MerkleTree is a kind of vector commitment
 type MerkleTree struct {
 	mktree   *m.MerkleTree
 	contents []m.Content
 }
 
-//NewMerkleTree generates a merkletree
+// NewMerkleTree generates a merkletree
 func NewMerkleTree(data [][]string) (*MerkleTree, error) {
 	contents := []m.Content{}
 	for _, d := range data {
@@ -84,7 +84,7 @@ func (t *MerkleTree) GetMerkleTreeProof(id int) ([][]byte, []int64) {
 	return path, indicator
 }
 
-//VerifyMerkleTreeProof returns a vector commitment
+// VerifyMerkleTreeProof returns a vector commitment
 func VerifyMerkleTreeProof(root []byte, proof [][]byte, indicator []int64, msg []string) bool {
 	if len(proof) != len(indicator) {
 		return false

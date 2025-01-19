@@ -3,23 +3,25 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
+
 	"go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/pairing"
-	"sort"
 )
 
-func MapToSlice(data map[int][]string) [][]string {
-	// 获取 map 的所有键并排序
-	keys := make([]int, 0, len(data))
-	for k := range data {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys) // 按照键从小到大排序
+// MapToSlice 将 map 转换为 2 维切片，确保结果大小为 M
+func MapToSlice(data map[int][]string, M int) [][]string {
+	// 初始化结果切片，预分配空间为 M
+	result := make([][]string, 0, M)
 
-	// 按排序后的键依次将值添加到切片中
-	result := make([][]string, 0, len(keys))
-	for _, k := range keys {
-		result = append(result, data[k])
+	// 遍历 0 到 M-1
+	for i := 0; i < M; i++ {
+		if v, exists := data[i]; exists {
+			// 如果键存在，添加对应的值
+			result = append(result, v)
+		} else {
+			// 如果键不存在，添加一个空的字符串切片
+			result = append(result, []string{})
+		}
 	}
 
 	return result
@@ -44,14 +46,14 @@ func BytesToPoint(B []byte) kyber.Point {
 	return P
 }
 
-//Uint32ToBytes convert uint32 to bytes
+// Uint32ToBytes convert uint32 to bytes
 func Uint32ToBytes(n uint32) []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	binary.Write(bytebuf, binary.BigEndian, n)
 	return bytebuf.Bytes()
 }
 
-//BytesToUint32 convert bytes to uint32
+// BytesToUint32 convert bytes to uint32
 func BytesToUint32(byt []byte) uint32 {
 	bytebuff := bytes.NewBuffer(byt)
 	var data uint32
@@ -59,7 +61,7 @@ func BytesToUint32(byt []byte) uint32 {
 	return data
 }
 
-//BytesToInt convert bytes to int
+// BytesToInt convert bytes to int
 func BytesToInt(byt []byte) int {
 	bytebuff := bytes.NewBuffer(byt)
 	var data uint32
@@ -67,7 +69,7 @@ func BytesToInt(byt []byte) int {
 	return int(data)
 }
 
-//IntToBytes convert int to bytes
+// IntToBytes convert int to bytes
 func IntToBytes(n int) []byte {
 	data := uint32(n)
 	bytebuf := bytes.NewBuffer([]byte{})
@@ -75,7 +77,7 @@ func IntToBytes(n int) []byte {
 	return bytebuf.Bytes()
 }
 
-//Uint32sToBytes convert uint32s to bytes
+// Uint32sToBytes convert uint32s to bytes
 func Uint32sToBytes(ns []uint32) []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	for _, n := range ns {
@@ -84,7 +86,7 @@ func Uint32sToBytes(ns []uint32) []byte {
 	return bytebuf.Bytes()
 }
 
-//BytesToUint32s convert bytes to uint32s
+// BytesToUint32s convert bytes to uint32s
 func BytesToUint32s(byt []byte) []uint32 {
 	bytebuff := bytes.NewBuffer(byt)
 	data := make([]uint32, len(byt)/4)
