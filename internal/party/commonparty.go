@@ -22,6 +22,7 @@ type CommonParty struct {
 	sendChannels      []chan *protobuf.Message
 	dispatcheChannels *sync.Map
 	ShardList         []int //节点负责沟通的分片
+	Debug             bool
 }
 
 // NewCommonParty return a new common party object
@@ -44,7 +45,7 @@ func NewCommonParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid u
 
 // InitReceiveChannel setup the listener and Init the receiveChannel
 func (p *CommonParty) InitReceiveChannel() error {
-	p.dispatcheChannels = core.MakeDispatcheChannels(core.MakeReceiveChannel(p.portList[p.PID]), p.N)
+	p.dispatcheChannels = core.MakeDispatcheChannels(core.MakeReceiveChannel(p.portList[p.PID], p.Debug), p.N)
 	return nil
 }
 
@@ -58,7 +59,7 @@ func (p *CommonParty) InitSendChannel() error {
 	dirname := fmt.Sprintf(homeDir+"/Chamael/log/%s", p.ipList[p.PID]+":"+p.portList[p.PID])
 	os.Mkdir(dirname, 0755)
 	for i := uint32(0); i < p.N*p.m; i++ {
-		p.sendChannels[i] = core.MakeSendChannel(p.ipList[i], p.portList[i], dirname)
+		p.sendChannels[i] = core.MakeSendChannel(p.ipList[i], p.portList[i], dirname, p.Debug)
 	}
 	return nil
 }

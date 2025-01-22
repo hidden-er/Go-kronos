@@ -3,8 +3,10 @@ package core
 import (
 	"Chamael/pkg/protobuf"
 	"Chamael/pkg/utils"
+	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -14,10 +16,11 @@ import (
 var MAXMESSAGE = 1024
 
 //MakeSendChannel returns a channel to send messages to hostIP
-func MakeSendChannel(hostIP string, hostPort string, dirname string) chan *protobuf.Message {
+func MakeSendChannel(hostIP string, hostPort string, dirname string, Debug bool) chan *protobuf.Message {
 	var addr *net.TCPAddr
 	var conn *net.TCPConn
 	var err1, err2 error
+	var fileLogger *log.Logger
 	//Retry to connet to node
 	retry := true
 	for retry {
@@ -43,14 +46,18 @@ func MakeSendChannel(hostIP string, hostPort string, dirname string) chan *proto
 	sendChannel := make(chan *protobuf.Message, MAXMESSAGE)
 
 	go func(conn *net.TCPConn, channel chan *protobuf.Message) {
-		/////filename := fmt.Sprintf("%s/(Send)%s.log", dirname, conn.RemoteAddr())
-		/////file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		/////fileLogger := log.New(file, "[MessageLogger] ", log.Ldate|log.Ltime|log.Lmicroseconds)
+		if Debug == true {
+			filename := fmt.Sprintf("%s/(Send)%s.log", dirname, conn.RemoteAddr())
+			file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+			fileLogger = log.New(file, "[MessageLogger] ", log.Ldate|log.Ltime|log.Lmicroseconds)
+		}
 		for {
 			//Pop protobuf.Message form sendchannel
 
 			m := <-(channel)
-			/////fileLogger.Println(m)
+			if Debug == true {
+				fileLogger.Println(m)
+			}
 			//Do Marshal
 			byt, err1 := proto.Marshal(m)
 			if err1 != nil {

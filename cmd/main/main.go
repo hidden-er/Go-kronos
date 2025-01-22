@@ -19,6 +19,14 @@ import (
 func main() {
 	B, err := strconv.Atoi(os.Args[1])
 	ConfigFile := os.Args[2]
+	Mode := os.Args[3]
+	var Debug bool
+	if Mode == "Debug" {
+		Debug = true
+	} else {
+		Debug = false
+	}
+
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -28,7 +36,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	p := party.NewHonestParty(uint32(c.N), uint32(c.F), uint32(c.M), uint32(c.PID), uint32(c.Snumber), uint32(c.SID), c.IPList, c.PortList, division.CalculateShards(c.M, c.N, c.PID), c.PK, c.SK)
+	p := party.NewHonestParty(uint32(c.N), uint32(c.F), uint32(c.M), uint32(c.PID), uint32(c.Snumber), uint32(c.SID), c.IPList, c.PortList, division.CalculateShards(c.M, c.N, c.PID), c.PK, c.SK, Debug)
 	p.InitReceiveChannel()
 
 	//fmt.Println(p.PID, p.ShardList)
@@ -71,7 +79,6 @@ func main() {
 	*/
 
 	//time.Sleep(time.Second * time.Duration(c.PrepareTime/10))
-	//ctxdb := fmt.Sprintf("/home/hyx/Chamael/cross_txs.db", p.PID)\
 	ctxdb := homeDir + "/Chamael/cross_txs.db"
 
 	itx_inputChannel := make(chan []string, 1024)
@@ -100,6 +107,8 @@ func main() {
 
 	time.Sleep(time.Second * 15)
 	logger.CalculateTPS(c, *p, homeDir+"/Chamael/log/", timeChannel, outputChannel)
-	//logger.RenameHonest(c, *p, "/home/hyx/Chamael/log/")
+	if p.Debug == true {
+		logger.RenameHonest(c, *p, homeDir+"/Chamael/log/")
+	}
 	log.Println("exit safely", p.PID)
 }

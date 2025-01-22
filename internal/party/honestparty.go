@@ -25,12 +25,13 @@ type HonestParty struct {
 	sendChannels      []chan *protobuf.Message
 	dispatcheChannels *sync.Map
 	ShardList         []int //节点负责沟通的分片
+	Debug             bool
 
 	PK []kyber.Point
 	SK kyber.Scalar
 }
 
-func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid uint32, ipList []string, portList []string, ShardList []int, pk []string, sk string) *HonestParty {
+func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid uint32, ipList []string, portList []string, ShardList []int, pk []string, sk string, Debug bool) *HonestParty {
 
 	//suite := bn256.NewSuite()
 	suite := pairing.NewSuiteBn256()
@@ -59,6 +60,7 @@ func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid u
 		ShardList:    ShardList,
 		PK:           points,
 		SK:           scalar,
+		Debug:        Debug,
 	}
 
 	return &p
@@ -66,20 +68,23 @@ func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid u
 
 // InitReceiveChannel setup the listener and Init the receiveChannel
 func (p *HonestParty) InitReceiveChannel() error {
-	p.dispatcheChannels = core.MakeDispatcheChannels(core.MakeReceiveChannel(p.portList[p.PID]), p.N*p.M)
+	p.dispatcheChannels = core.MakeDispatcheChannels(core.MakeReceiveChannel(p.portList[p.PID], p.Debug), p.N*p.M)
 	return nil
 }
 
 // InitSendChannel setup the sender and Init the sendChannel, please run this after initializing all party's receiveChannel
 func (p *HonestParty) InitSendChannel() error {
 	homeDir, err := os.UserHomeDir()
+	var dirname string
 	if err != nil {
 		return err
 	}
-	dirname := fmt.Sprintf(homeDir+"/Chamael/log/%s", p.ipList[p.PID]+":"+p.portList[p.PID])
-	os.Mkdir(dirname, 0755)
+	if p.Debug == true {
+		dirname = fmt.Sprintf(homeDir+"/Chamael/log/%s", p.ipList[p.PID]+":"+p.portList[p.PID])
+		os.Mkdir(dirname, 0755)
+	}
 	for i := uint32(0); i < p.N*p.M; i++ {
-		p.sendChannels[i] = core.MakeSendChannel(p.ipList[i], p.portList[i], dirname)
+		p.sendChannels[i] = core.MakeSendChannel(p.ipList[i], p.portList[i], dirname, p.Debug)
 	}
 	return nil
 }

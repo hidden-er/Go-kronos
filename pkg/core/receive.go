@@ -3,16 +3,18 @@ package core
 import (
 	"Chamael/pkg/protobuf"
 	"Chamael/pkg/utils"
+	"fmt"
 	"io"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"google.golang.org/protobuf/proto"
 )
 
 // MakeReceiveChannel returns a channel receiving messages
-func MakeReceiveChannel(port string) chan *protobuf.Message {
+func MakeReceiveChannel(port string, Debug bool) chan *protobuf.Message {
 	var addr *net.TCPAddr
 	var lis *net.TCPListener
 	var err1, err2 error
@@ -34,12 +36,15 @@ func MakeReceiveChannel(port string) chan *protobuf.Message {
 	//Make the receive channel and the handle func
 	var conn *net.TCPConn
 	var err3 error
+	var fileLogger *log.Logger
 	receiveChannel := make(chan *protobuf.Message, MAXMESSAGE)
 	go func() {
-
-		/////filename := fmt.Sprintf("/home/hyx/Chamael/log/(Received)%s.log", lis.Addr())
-		/////file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		/////fileLogger := log.New(file, "[MessageLogger] ", log.Ldate|log.Ltime|log.Lmicroseconds)
+		if Debug == true {
+			homeDir, _ := os.UserHomeDir()
+			filename := fmt.Sprintf("%s/Chamael/log/(Received)%s.log", homeDir, lis.Addr())
+			file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+			fileLogger = log.New(file, "[MessageLogger] ", log.Ldate|log.Ltime|log.Lmicroseconds)
+		}
 		for {
 			//The handle func run forever
 			conn, err3 = lis.AcceptTCP()
@@ -50,7 +55,7 @@ func MakeReceiveChannel(port string) chan *protobuf.Message {
 			//Once connect to a node, make a sub-handle func to handle this connection
 			go func(conn *net.TCPConn, channel chan *protobuf.Message) {
 				/*
-					filename := fmt.Sprintf("/home/hyx/Chamael/log/%s.log", conn.LocalAddr())
+					filename := fmt.Sprintf("%s/Chamael/log/%s.log", homeDir, conn.LocalAddr())
 					file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 					fileLogger := log.New(file, "[FileLogger] ", log.Ldate|log.Ltime)
 					fileLogger.Println("Logging to a file")
@@ -71,7 +76,9 @@ func MakeReceiveChannel(port string) chan *protobuf.Message {
 					//Do Unmarshal
 					var m protobuf.Message
 					err3 := proto.Unmarshal(buf, &m)
-					/////fileLogger.Println(m)
+					if Debug == true {
+						fileLogger.Println(m)
+					}
 					if err3 != nil {
 						log.Fatalln(err3, "In receive.go::go func(),Unmarshal failed")
 					}

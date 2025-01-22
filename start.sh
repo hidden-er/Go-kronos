@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Check if both parameters N and B are provided
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-  echo "Usage: $0 <N> <m> <B>"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
+  echo "Usage: $0 <N> <m> <B> <mode>"
   exit 1
 fi
 
@@ -10,6 +10,7 @@ fi
 N="$1"
 m="$2"
 B="$3"
+mode="$4"
 
 # Directory containing the config files
 config_dir="$HOME/Chamael/configs"
@@ -24,7 +25,7 @@ do
   if [ -f "$config_file" ]; then
     echo "Using config file: $config_file"
     # Run the Go program with the N and B parameters and the config file in the background
-    go run ./cmd/main "$B" "$config_file" &
+    go run ./cmd/main "$B" "$config_file" "$mode" &
   else
     echo "Config file $config_file not found"
   fi
