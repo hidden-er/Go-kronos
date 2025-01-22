@@ -101,7 +101,7 @@ func TXs_Inform_Handler(p *party.HonestParty, e uint32, TXsInformChannel chan []
 			Result = append(Result, payload.Txs...)
 		}
 
-		if len(l) >= int(p.N)-1 {
+		if len(l) >= int(p.N*p.M)-1 {
 			TXsInformChannel <- Result
 			return
 		}
