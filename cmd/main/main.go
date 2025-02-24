@@ -79,7 +79,7 @@ func main() {
 	*/
 
 	//time.Sleep(time.Second * time.Duration(c.PrepareTime/10))
-	ctxdb := homeDir + "/Chamael/cross_txs.db"
+	ctxdb := homeDir + "/Chamael/db/cross_txs_node" + strconv.Itoa(int(p.PID)) + ".db"
 
 	itx_inputChannel := make(chan []string, 1024)
 	ctx_inputChannel := make(chan []string, 1024)

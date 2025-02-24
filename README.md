@@ -11,7 +11,7 @@ go run ./cmd/configMaker/configMaker.go
 
 start nodes:
 ``` bash
-./start.sh 4 3 1000 1
+./start_all.sh 4 3 1000 1
 ```
 
 calculate performance:
