@@ -21,7 +21,7 @@ config_file="$config_dir/config_$id.yaml"
 if [ -f "$config_file" ]; then
   echo "Using config file: $config_file"
   # Run the Go program with the N and B parameters and the config file in the background
-  go run ./cmd/main "$B" "$config_file" "$mode" &
+  go run ./cmd/main "$B" "$config_file" "$mode"
 else
   echo "Config file $config_file not found"
 fi

@@ -12,10 +12,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-//MAXMESSAGE is the size of channels
+// MAXMESSAGE is the size of channels
 var MAXMESSAGE = 1024
 
-//MakeSendChannel returns a channel to send messages to hostIP
+// MakeSendChannel returns a channel to send messages to hostIP
 func MakeSendChannel(hostIP string, hostPort string, dirname string, Debug bool) chan *protobuf.Message {
 	var addr *net.TCPAddr
 	var conn *net.TCPConn
