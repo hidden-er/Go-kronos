@@ -13,7 +13,7 @@ mode="$4"
 
 for (( i=0; i<N*m; i++ ))
 do
-  ./start_one.sh $i $B $mode &
+  ./start_one.sh $i $B $mode 0 &
 done
 
 wait

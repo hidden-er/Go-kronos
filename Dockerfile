@@ -21,6 +21,6 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN go mod download
 
 # make the start_all.sh executable
-RUN chmod +x start_all.sh
+RUN chmod +x start_all.sh && chmod +x start_one.sh
 
 ENTRYPOINT ["./start_all.sh"]

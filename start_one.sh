@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Check if parameters are provided
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-  echo "Usage: $0 <id> <B> <mode>"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
+  echo "Usage: $0 <id> <B> <mode> <print_perf>"
   exit 1
 fi
 
 id="$1"
 B="$2"
 mode="$3"
+print_perf="$4"
 
 # Directory containing the config files
 config_dir="$HOME/Chamael/configs"
@@ -24,4 +25,8 @@ if [ -f "$config_file" ]; then
   go run ./cmd/main "$B" "$config_file" "$mode"
 else
   echo "Config file $config_file not found"
+fi
+
+if [ "$print_perf" -eq 1 ]; then
+    cat "./log/(Performance)node$id"
 fi

@@ -1,0 +1,114 @@
+version: '3'
+services:
+  node0:
+    build: .
+    entrypoint: ['./start_one.sh', '0', '1000', '1', '1']
+    container_name: node0
+    ports:
+      - 9233:9233
+    networks:
+      - tcp_net
+
+  node1:
+    build: .
+    entrypoint: ['./start_one.sh', '1', '1000', '1', '1']
+    container_name: node1
+    ports:
+      - 9234:9234
+    networks:
+      - tcp_net
+
+  node2:
+    build: .
+    entrypoint: ['./start_one.sh', '2', '1000', '1', '1']
+    container_name: node2
+    ports:
+      - 9235:9235
+    networks:
+      - tcp_net
+
+  node3:
+    build: .
+    entrypoint: ['./start_one.sh', '3', '1000', '1', '1']
+    container_name: node3
+    ports:
+      - 9236:9236
+    networks:
+      - tcp_net
+
+  node4:
+    build: .
+    entrypoint: ['./start_one.sh', '4', '1000', '1', '1']
+    container_name: node4
+    ports:
+      - 9237:9237
+    networks:
+      - tcp_net
+
+  node5:
+    build: .
+    entrypoint: ['./start_one.sh', '5', '1000', '1', '1']
+    container_name: node5
+    ports:
+      - 9238:9238
+    networks:
+      - tcp_net
+
+  node6:
+    build: .
+    entrypoint: ['./start_one.sh', '6', '1000', '1', '1']
+    container_name: node6
+    ports:
+      - 9239:9239
+    networks:
+      - tcp_net
+
+  node7:
+    build: .
+    entrypoint: ['./start_one.sh', '7', '1000', '1', '1']
+    container_name: node7
+    ports:
+      - 9240:9240
+    networks:
+      - tcp_net
+
+  node8:
+    build: .
+    entrypoint: ['./start_one.sh', '8', '1000', '1', '1']
+    container_name: node8
+    ports:
+      - 9241:9241
+    networks:
+      - tcp_net
+
+  node9:
+    build: .
+    entrypoint: ['./start_one.sh', '9', '1000', '1', '1']
+    container_name: node9
+    ports:
+      - 9242:9242
+    networks:
+      - tcp_net
+
+  node10:
+    build: .
+    entrypoint: ['./start_one.sh', '10', '1000', '1', '1']
+    container_name: node10
+    ports:
+      - 9243:9243
+    networks:
+      - tcp_net
+
+  node11:
+    build: .
+    entrypoint: ['./start_one.sh', '11', '1000', '1', '1']
+    container_name: node11
+    ports:
+      - 9244:9244
+    networks:
+      - tcp_net
+
+networks:
+  tcp_net:
+    driver: bridge
+
