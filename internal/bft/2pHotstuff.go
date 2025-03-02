@@ -6,19 +6,31 @@ import (
 	"Chamael/pkg/protobuf"
 	"Chamael/pkg/utils"
 	"fmt"
+	"strings"
+
 	"go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/pairing/bn256"
 	"go.dedis.ch/kyber/v3/sign/bls"
-	"strings"
 )
 
-//收集足量的New_View消息后广播Prepare消息
-func Prepare_BroadCast(p *party.HonestParty, e uint32, txs []string) {
+// 收集足量的New_View消息后广播Prepare消息
+func Prepare_BroadCast(p *party.HonestParty, e uint32, txs []string, isGlobal bool) {
 	var l []int
 	seen := make(map[int]bool)
+
+	var threshold int
+	if isGlobal {
+		// threshold = int(p.N*p.M) - 1
+		F := (int(p.N*p.M) - 1) / 3
+		threshold = 2*F + 1
+	} else {
+		// threshold = int(p.N) - 1
+		threshold = 2*int(p.F) + 1
+	}
+
 	for {
 		//if (len(l) >= int(p.F)*2+1) || (e == 1) {
-		if (len(l) >= int(p.N)-1) || (e == 1) {
+		if (len(l) >= threshold) || (e == 1) {
 			fmt.Println("New View ", e, "start")
 			break
 		}
@@ -31,17 +43,34 @@ func Prepare_BroadCast(p *party.HonestParty, e uint32, txs []string) {
 	PrepareMessage := core.Encapsulation("Prepare", utils.Uint32ToBytes(e), p.PID, &protobuf.Prepare{
 		Txs: txs,
 	})
-	p.Intra_Broadcast(PrepareMessage)
+	if isGlobal {
+		p.Broadcast(PrepareMessage)
+		// fmt.Println("Send Prepare msg to all parties")
+	} else {
+		p.Intra_Broadcast(PrepareMessage)
+		// fmt.Println("Send Prepare msg to intra-shard parties")
+	}
 
 }
 
-//收集足量的Prepare_Vote消息,验证AggSig1(txs||vote1||epoch)后广播Precommit消息
-func Precommit_BroadCast(p *party.HonestParty, e uint32, txs []string) {
+// 收集足量的Prepare_Vote消息,验证AggSig1(txs||vote1||epoch)后广播Precommit消息
+func Precommit_BroadCast(p *party.HonestParty, e uint32, txs []string, isGlobal bool) {
 	suite := bn256.NewSuite()
 	var l []int
 	seen := make(map[int]bool)
 	var signatures [][]byte
 	var pubkeys []kyber.Point
+
+	var threshold int
+	if isGlobal {
+		// threshold = int(p.N*p.M) - 1
+		F := (int(p.N*p.M) - 1) / 3
+		threshold = 2*F + 1
+	} else {
+		// threshold = int(p.N) - 1
+		threshold = 2*int(p.F) + 1
+	}
+
 	for {
 		m := <-p.GetMessage("Prepare_Vote", utils.Uint32ToBytes(e))
 		payload := (core.Decapsulation("Prepare_Vote", m)).(*protobuf.Prepare_Vote)
@@ -52,8 +81,7 @@ func Precommit_BroadCast(p *party.HonestParty, e uint32, txs []string) {
 			pubkeys = append(pubkeys, p.PK[m.Sender])
 		}
 		//if len(l) >= int(p.F)*2+1 {
-
-		if len(l) >= int(p.N)-1 {
+		if len(l) >= threshold {
 			break
 		}
 	}
@@ -70,16 +98,33 @@ func Precommit_BroadCast(p *party.HonestParty, e uint32, txs []string) {
 		Aggsig: aggSig,
 		Aggpk:  utils.PointToBytes(aggPubKey),
 	})
-	p.Intra_Broadcast(PrecommitMessage)
+	if isGlobal {
+		p.Broadcast(PrecommitMessage)
+		// fmt.Println("Send Precommit msg to all parties")
+	} else {
+		p.Intra_Broadcast(PrecommitMessage)
+		// fmt.Println("Send Precommit msg to intra-shard parties")
+	}
 }
 
-//收集足量的Precommit_Vote消息,验证AggSig2(vote2||epoch)后广播Commit消息
-func Commit_BroadCast(p *party.HonestParty, e uint32, txs []string, outputChannel chan []string) {
+// 收集足量的Precommit_Vote消息,验证AggSig2(vote2||epoch)后广播Commit消息
+func Commit_BroadCast(p *party.HonestParty, e uint32, txs []string, outputChannel chan []string, isGlobal bool) {
 	suite := bn256.NewSuite()
 	var l []int
 	seen := make(map[int]bool)
 	var signatures [][]byte
 	var pubkeys []kyber.Point
+
+	var threshold int
+	if isGlobal {
+		// threshold = int(p.N*p.M) - 1
+		F := (int(p.N*p.M) - 1) / 3
+		threshold = 2*F + 1
+	} else {
+		// threshold = int(p.N) - 1
+		threshold = 2*int(p.F) + 1
+	}
+
 	for {
 		m := <-p.GetMessage("Precommit_Vote", utils.Uint32ToBytes(e))
 		payload := (core.Decapsulation("Precommit_Vote", m)).(*protobuf.Precommit_Vote)
@@ -90,7 +135,7 @@ func Commit_BroadCast(p *party.HonestParty, e uint32, txs []string, outputChanne
 			pubkeys = append(pubkeys, p.PK[m.Sender])
 		}
 		//if len(l) >= int(p.F)*2+1 {
-		if len(l) >= int(p.N)-1 {
+		if len(l) >= threshold {
 			break
 		}
 	}
@@ -107,29 +152,47 @@ func Commit_BroadCast(p *party.HonestParty, e uint32, txs []string, outputChanne
 		Aggsig: aggSig,
 		Aggpk:  utils.PointToBytes(aggPubKey),
 	})
-	p.Intra_Broadcast(CommitMessage)
+	if isGlobal {
+		p.Broadcast(CommitMessage)
+		// fmt.Println("Send Commit msg to all parties")
+	} else {
+		p.Intra_Broadcast(CommitMessage)
+		// fmt.Println("Send Commit msg to intra-shard parties")
+	}
 	outputChannel <- txs
 }
 
-func HotStuffProcess(p *party.HonestParty, epoch int, inputChannel chan []string, outputChannel chan []string) {
+// isGlobal: true 全局共识, false 片内共识
+func HotStuffProcess(p *party.HonestParty, epoch int, inputChannel chan []string, outputChannel chan []string, isGlobal bool) {
 	suite := bn256.NewSuite()
 	e := uint32(epoch)
 	var txs []string //处理自己作为Leader时提议的交易集合;从inputchannel来,所以是[]String
 	var Txs []byte   //处理自己作为普通参与者时接收的交易集合;只供验签使用,所以用[]byte
-	var is_leader bool
-	if (e-1)%p.N == p.SID {
-		is_leader = true
-		txs = <-inputChannel
-	} else {
-		is_leader = false
+
+	var gotPrepare bool = false // 判断是否收到Prepare消息，防止Leader在收到Precommit/Commit消息后，没有收到Prepare消息，导致Txs为空
+
+	// 判断是否是Leader
+	var is_leader bool = false
+	if isGlobal { // 全局共识，选择 PID = (e-1)%(N*M)
+		if (e-1)%(p.N*p.M) == p.PID {
+			is_leader = true
+			txs = <-inputChannel
+		}
+	} else { // 片内共识，选择 SID = (e-1)%N
+		if (e-1)%p.N == p.SID {
+			is_leader = true
+			txs = <-inputChannel
+		}
 	}
+
 	if is_leader == true { //自己作为领导者时
+		// log.Println("Leader: ", p.PID)
 		//收集足量的New_View消息后广播Prepare消息
-		Prepare_BroadCast(p, e, txs)
+		Prepare_BroadCast(p, e, txs, isGlobal)
 		//收集足量的Prepare_Vote消息,验证AggSig1(txs||vote1||epoch)后广播Precommit消息
-		Precommit_BroadCast(p, e, txs)
+		Precommit_BroadCast(p, e, txs, isGlobal)
 		//收集足量的Precommit_Vote消息,验证AggSig2(vote2||epoch)后广播Commit消息并把Txs放入输出通道
-		Commit_BroadCast(p, e, txs, outputChannel)
+		Commit_BroadCast(p, e, txs, outputChannel, isGlobal)
 
 	} else { //自己作为普通参与节点时
 	Loop:
@@ -150,9 +213,22 @@ func HotStuffProcess(p *party.HonestParty, epoch int, inputChannel chan []string
 					Sig:  sigPrepare,
 				})
 				p.Send(Prepare_VoteMessage, m.Sender)
+				// fmt.Println("Send Prepare_Vote msg to ", m.Sender)
+				gotPrepare = true
 			//收到Precommit消息,验证aggsig1(txs||vote1||epoch),签sig2(vote2||epoch)并回复Precommit_Vote消息
 			case m := <-p.GetMessage("Precommit", utils.Uint32ToBytes(e)):
 				payload := (core.Decapsulation("Precommit", m)).(*protobuf.Precommit)
+
+				if !gotPrepare {
+					// fmt.Println("Txs empty, try to receive Prepare msg", p.PID)
+					mPrepare := <-p.GetMessage("Prepare", utils.Uint32ToBytes(e))
+					// fmt.Println("Receive Prepare msg from ", mPrepare.Sender)
+					payloadPrepare := (core.Decapsulation("Prepare", mPrepare)).(*protobuf.Prepare)
+					txs = payloadPrepare.Txs
+					Txs = []byte(strings.Join(txs, ""))
+					gotPrepare = true
+				}
+
 				sver := utils.MessageEncap([][]byte{Txs, utils.Uint32ToBytes(1), utils.Uint32ToBytes(e)})
 				AggPK := utils.BytesToPoint(payload.Aggpk)
 				err := bls.Verify(suite, AggPK, sver, payload.Aggsig)
@@ -171,9 +247,20 @@ func HotStuffProcess(p *party.HonestParty, epoch int, inputChannel chan []string
 					Sig:  sigPrepare,
 				})
 				p.Send(Precommit_VoteMessage, m.Sender)
+				// fmt.Println("Send Precommit_Vote msg to ", m.Sender)
 			//收到Commit消息,验证aggsig2(vote2||epoch)并回复New_View消息;
 			case m := <-p.GetMessage("Commit", utils.Uint32ToBytes(e)):
 				payload := (core.Decapsulation("Commit", m)).(*protobuf.Commit)
+
+				if !gotPrepare {
+					// fmt.Println("Txs empty, try to receive Prepare msg", p.PID)
+					mPrepare := <-p.GetMessage("Prepare", utils.Uint32ToBytes(e))
+					// fmt.Println("Receive Prepare msg from ", mPrepare.Sender)
+					payloadPrepare := (core.Decapsulation("Prepare", mPrepare)).(*protobuf.Prepare)
+					txs = payloadPrepare.Txs
+					gotPrepare = true
+				}
+
 				sver := utils.MessageEncap([][]byte{utils.Uint32ToBytes(1), utils.Uint32ToBytes(e)})
 				AggPK := utils.BytesToPoint(payload.Aggpk)
 				err := bls.Verify(suite, AggPK, sver, payload.Aggsig)
@@ -181,11 +268,20 @@ func HotStuffProcess(p *party.HonestParty, epoch int, inputChannel chan []string
 					fmt.Println("AggSig2(vote2||epoch) verification failed(Malicious Leader):", err)
 					return
 				}
+
+				// fmt.Println("Receive Commit msg from ", m.Sender)
+
 				New_ViewMessage := core.Encapsulation("New_View", utils.Uint32ToBytes(e+1), p.PID, &protobuf.New_View{
 					None: make([]byte, 0),
 				})
 				//p.Send(New_ViewMessage, m.Sender)
-				p.Intra_Broadcast(New_ViewMessage)
+				if isGlobal {
+					p.Broadcast(New_ViewMessage)
+					// fmt.Println("Send New_View msg to all parties")
+				} else {
+					p.Intra_Broadcast(New_ViewMessage)
+					// fmt.Println("Send New_View msg to intra-shard parties")
+				}
 				outputChannel <- txs
 				break Loop
 			}

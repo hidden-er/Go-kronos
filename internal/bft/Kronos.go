@@ -232,7 +232,7 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 		//fmt.Println("txs_in:", txs_in, "\n\n\n\n\n\n\n\n\n")
 		inputChannel <- txs_in
 
-		HotStuffProcess(p, int(e), inputChannel, receiveChannel)
+		HotStuffProcess(p, int(e), inputChannel, receiveChannel, false)
 		txs_out = <-receiveChannel
 		txs_ctx2, txs_itx2 = CategorizeTransactionsByOutputShard(txs_out)
 		//fmt.Println("txs_out:", p.PID, txs_out, "\n\n\n")
