@@ -16,7 +16,7 @@ func main() {
 	ConfigFile := os.Args[1]
 	Mode := os.Args[2]
 	var Debug bool
-	if Mode == "Debug" {
+	if Mode == "1" {
 		Debug = true
 	} else {
 		Debug = false
