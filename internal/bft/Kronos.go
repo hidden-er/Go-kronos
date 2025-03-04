@@ -196,6 +196,8 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 		//对于片内交易和输出分片为自己的交易,直接输出,作为吞吐量计算
 		outputChannel <- txs_itx2
 		outputChannel <- txs_ctx2[int(p.Snumber)]
+		//fmt.Println(txs_ctx2[int(p.Snumber)])
+		//fmt.Println("\n\n\n\n\n\n\n")
 		txs_ctx2[int(p.Snumber)] = nil
 
 		//对于跨片交易,建立默克尔树,并对树根签名

@@ -97,12 +97,14 @@ func CalculateTPS(c config.HonestConfig, p party.HonestParty, path string, timeC
 	duration := latestTime.Sub(earliestTime).Seconds()
 	fmt.Printf("Time difference: %.2f seconds\n", duration)
 
-	totalTransactions = int(float64(internalTransactions) + float64(crossShardTransactions)/float64(p.N))
+	internalTransactions = int(float64(internalTransactions) / float64(p.N))
+	crossShardTransactions = int(float64(crossShardTransactions) / float64(p.N))
+	totalTransactions = int(float64(internalTransactions) + float64(crossShardTransactions))
 
 	// 计算TPS (Transactions Per Second)
 	totalTPS := float64(totalTransactions) / duration
 	internalTPS := float64(internalTransactions) / duration
-	crossShardTPS := float64(crossShardTransactions) / duration / float64(p.N)
+	crossShardTPS := float64(crossShardTransactions) / duration
 
 	// 输出到文件
 	logMessage := fmt.Sprintf(

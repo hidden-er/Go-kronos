@@ -222,10 +222,10 @@ func HotStuffProcess(p *party.HonestParty, epoch int, inputChannel chan []string
 				vote = 1
 				smessage := utils.MessageEncap([][]byte{utils.Uint32ToBytes(vote), utils.Uint32ToBytes(e)})
 
-				sigPrepare, _ := bls.Sign(suite, p.SK, smessage) //sign(vote2||epoch)
+				sigPrecommit, _ := bls.Sign(suite, p.SK, smessage) //sign(vote2||epoch)
 				Precommit_VoteMessage := core.Encapsulation("Precommit_Vote", utils.Uint32ToBytes(e), p.PID, &protobuf.Precommit_Vote{
 					Vote: vote,
-					Sig:  sigPrepare,
+					Sig:  sigPrecommit,
 				})
 				p.Send(Precommit_VoteMessage, m.Sender)
 			//收到Commit消息,验证aggsig2(vote2||epoch)并回复New_View消息;

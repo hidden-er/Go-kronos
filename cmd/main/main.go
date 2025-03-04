@@ -53,7 +53,7 @@ func main() {
 
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	var Txs []string
-	for i := 0; i < isTxnum; i++ {
+	for i := 0; i < isTxnum*c.TestEpochs; i++ {
 		tx := txs.InterTxGenerator(txlength, int(p.Snumber), int(p.PID), chars)
 		Txs = append(Txs, tx)
 	}
@@ -87,7 +87,7 @@ func main() {
 	}*/
 
 	timeChannel := make(chan time.Time, 1024)
-	timeChannel <- time.Now()
+	//timeChannel <- time.Now()
 	go bft.KronosProcess(p, c.TestEpochs, itx_inputChannel, ctx_inputChannel, outputChannel, timeChannel)
 
 	time.Sleep(time.Second * 15)
