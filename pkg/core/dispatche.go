@@ -21,11 +21,7 @@ func MakeDispatcheChannels(receiveChannel chan *protobuf.Message, N uint32) *syn
 			value1, _ := dispatcheChannels.LoadOrStore(m.Type, new(sync.Map))
 
 			var value2 any
-			if m.Type == "Dec" {
-				value2, _ = value1.(*sync.Map).LoadOrStore(string(m.Id), make(chan *protobuf.Message, 100000))
-			} else {
-				value2, _ = value1.(*sync.Map).LoadOrStore(string(m.Id), make(chan *protobuf.Message, 1024))
-			}
+			value2, _ = value1.(*sync.Map).LoadOrStore(string(m.Id), make(chan *protobuf.Message, 1024))
 
 			value2.(chan *protobuf.Message) <- m
 

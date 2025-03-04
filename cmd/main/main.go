@@ -6,7 +6,6 @@ import (
 	"Chamael/pkg/config"
 	"Chamael/pkg/txs"
 	"Chamael/pkg/utils/db"
-	"Chamael/pkg/utils/division"
 	"Chamael/pkg/utils/logger"
 	"time"
 
@@ -36,10 +35,10 @@ func main() {
 		fmt.Println(err)
 	}
 
-	p := party.NewHonestParty(uint32(c.N), uint32(c.F), uint32(c.M), uint32(c.PID), uint32(c.Snumber), uint32(c.SID), c.IPList, c.PortList, division.CalculateShards(c.M, c.N, c.PID), c.PK, c.SK, Debug)
+	p := party.NewHonestParty(uint32(c.N), uint32(c.F), uint32(c.M), uint32(c.PID), uint32(c.Snumber), uint32(c.SID), c.IPList, c.PortList, c.PK, c.SK, Debug)
 	p.InitReceiveChannel()
 
-	//fmt.Println(p.PID, p.ShardList)
+	//fmt.Println(p.PID, p.ShardList)g
 	time.Sleep(time.Second * time.Duration(c.PrepareTime/10))
 
 	p.InitSendChannel()

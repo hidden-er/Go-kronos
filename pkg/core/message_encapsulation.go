@@ -12,23 +12,6 @@ func Encapsulation(messageType string, ID []byte, sender uint32, payloadMessage 
 	var data []byte
 	var err error
 	switch messageType {
-	/*
-		case "Propose":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.Propose))
-		case "VotePropose":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.VotePropose))
-		case "Commit":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.Commit))
-		case "VoteCommit":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.VoteCommit))
-		case "Execute":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.Execute))
-		case "CrossPropose":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.CrossPropose))
-		case "CrossCommit":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.CrossCommit))
-		case "CrossExecute":
-			data, err = proto.Marshal((payloadMessage).(*protobuf.CrossExecute))*/
 
 	case "New_View":
 		data, err = proto.Marshal((payloadMessage).(*protobuf.New_View))
@@ -67,40 +50,6 @@ func Encapsulation(messageType string, ID []byte, sender uint32, payloadMessage 
 //Decapsulation decapsulates a message to it's original type
 func Decapsulation(messageType string, m *protobuf.Message) any {
 	switch messageType {
-	/*
-		case "Propose":
-			var payloadMessage protobuf.Propose
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "VotePropose":
-			var payloadMessage protobuf.VotePropose
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "Commit":
-			var payloadMessage protobuf.Commit
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "VoteCommit":
-			var payloadMessage protobuf.VoteCommit
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "Execute":
-			var payloadMessage protobuf.Execute
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "CrossPropose":
-			var payloadMessage protobuf.CrossPropose
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "CrossCommit":
-			var payloadMessage protobuf.CrossCommit
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage
-		case "CrossExecute":
-			var payloadMessage protobuf.CrossExecute
-			proto.Unmarshal(m.Data, &payloadMessage)
-			return &payloadMessage */
-
 	case "New_View":
 		var payloadMessage protobuf.New_View
 		proto.Unmarshal(m.Data, &payloadMessage)

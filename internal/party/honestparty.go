@@ -24,14 +24,13 @@ type HonestParty struct {
 	portList          []string
 	sendChannels      []chan *protobuf.Message
 	dispatcheChannels *sync.Map
-	ShardList         []int //节点负责沟通的分片
 	Debug             bool
 
 	PK []kyber.Point
 	SK kyber.Scalar
 }
 
-func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid uint32, ipList []string, portList []string, ShardList []int, pk []string, sk string, Debug bool) *HonestParty {
+func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid uint32, ipList []string, portList []string, pk []string, sk string, Debug bool) *HonestParty {
 
 	//suite := bn256.NewSuite()
 	suite := pairing.NewSuiteBn256()
@@ -57,7 +56,6 @@ func NewHonestParty(N uint32, F uint32, m uint32, pid uint32, snum uint32, sid u
 		ipList:       ipList,
 		portList:     portList,
 		sendChannels: make([]chan *protobuf.Message, N*m), //N改成N*m ！
-		ShardList:    ShardList,
 		PK:           points,
 		SK:           scalar,
 		Debug:        Debug,
@@ -148,11 +146,7 @@ func (p *HonestParty) GetMessage(messageType string, ID []byte) chan *protobuf.M
 	value1, _ := p.dispatcheChannels.LoadOrStore(messageType, new(sync.Map))
 
 	var value2 any
-	if messageType == "Dec" {
-		value2, _ = value1.(*sync.Map).LoadOrStore(string(ID), make(chan *protobuf.Message, 100000))
-	} else {
-		value2, _ = value1.(*sync.Map).LoadOrStore(string(ID), make(chan *protobuf.Message, 1024))
-	}
+	value2, _ = value1.(*sync.Map).LoadOrStore(string(ID), make(chan *protobuf.Message, 1024))
 
 	return value2.(chan *protobuf.Message)
 }

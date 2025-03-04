@@ -123,11 +123,7 @@ func (p *CommonParty) GetMessage(messageType string, ID []byte) chan *protobuf.M
 	value1, _ := p.dispatcheChannels.LoadOrStore(messageType, new(sync.Map))
 
 	var value2 any
-	if messageType == "Dec" {
-		value2, _ = value1.(*sync.Map).LoadOrStore(string(ID), make(chan *protobuf.Message, 100000))
-	} else {
-		value2, _ = value1.(*sync.Map).LoadOrStore(string(ID), make(chan *protobuf.Message, 1024))
-	}
+	value2, _ = value1.(*sync.Map).LoadOrStore(string(ID), make(chan *protobuf.Message, 1024))
 
 	return value2.(chan *protobuf.Message)
 }

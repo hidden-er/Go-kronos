@@ -163,6 +163,7 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 	var TXsInformChannel = make(chan []string, 1024)
 	var InputResultTobeDoneChannel = make(chan []string, 1024)
 	suite := bn256.NewSuite()
+	timeChannel <- time.Now()
 	for e := uint32(1); e <= uint32(epoch); e++ {
 		//go TXs_Inform_Handler(p, e-1, TXsInformChannel)
 		//go InpufBFT_Result_Handler(p, e-1, InputResultTobeDoneChannel, txPool)
@@ -238,7 +239,6 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 		//fmt.Println("txs_out:", p.PID, txs_out, "\n\n\n")
 
 		//对于片内交易和输出分片为自己的交易,直接输出,作为吞吐量计算
-		timeChannel <- time.Now()
 		outputChannel <- txs_itx2
 		outputChannel <- txs_ctx2[int(p.Snumber)]
 		txs_ctx2[int(p.Snumber)] = nil
@@ -327,6 +327,8 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 			})
 			p.Send(SigMessage, m.Sender)
 		}
+
+		timeChannel <- time.Now()
 	}
 	time.Sleep(time.Second * 15)
 }
