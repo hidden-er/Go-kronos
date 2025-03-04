@@ -27,13 +27,11 @@ func MakeSendChannel(hostIP string, hostPort string, dirname string, Debug bool)
 		addr, err1 = net.ResolveTCPAddr("tcp4", hostIP+":"+hostPort)
 		conn, err2 = net.DialTCP("tcp4", nil, addr)
 		if err1 != nil {
-			//log.Println(err1)
 			retry = true
 			time.Sleep(1000)
 			continue
 		}
 		if err2 != nil {
-			//log.Println(err2)
 			retry = true
 			time.Sleep(1000)
 			continue

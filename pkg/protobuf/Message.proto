@@ -9,34 +9,6 @@ message Message {
   bytes data = 4;
 }
 
-/*FP使用的消息类型
-message Propose{
-  repeated string txs = 1;
-  bytes unknown = 2;
-}
-message VotePropose{
-  bytes unknown = 1;
-}
-message Commit{
-  bytes unknown = 1;
-}
-message VoteCommit{
-  bytes unknown = 1;
-}
-message Execute{
-  bytes unknown = 1;
-}
-message CrossPropose{
-  repeated string txs = 1;
-  bytes unknown = 2;
-}
-message CrossCommit{
-  bytes unknown = 1;
-}
-message CrossExecute{
-  bytes unknown = 1;
-}
-*/
 
 //Chamael-2pHotstuff使用的消息类型
 message New_View{

@@ -24,8 +24,6 @@ func MakeReceiveChannel(port string, Debug bool) chan *protobuf.Message {
 		addr, err1 = net.ResolveTCPAddr("tcp4", ":"+port)
 		lis, err2 = net.ListenTCP("tcp4", addr)
 		if err1 != nil || err2 != nil {
-			//log.Println(err1)
-			//log.Println(err2)
 			time.Sleep(1000)
 			retry = true
 		} else {
@@ -54,12 +52,6 @@ func MakeReceiveChannel(port string, Debug bool) chan *protobuf.Message {
 			}
 			//Once connect to a node, make a sub-handle func to handle this connection
 			go func(conn *net.TCPConn, channel chan *protobuf.Message) {
-				/*
-					filename := fmt.Sprintf("%s/Chamael/log/%s.log", homeDir, conn.LocalAddr())
-					file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-					fileLogger := log.New(file, "[FileLogger] ", log.Ldate|log.Ltime)
-					fileLogger.Println("Logging to a file")
-				*/
 				for {
 					//Receive bytes
 					lengthBuf := make([]byte, 4)

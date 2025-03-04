@@ -146,7 +146,6 @@ func (c *HonestConfig) Marshal(location string) error {
 }
 
 func (c *HonestConfig) RemoteHonestGen(dir string) error {
-	//suite := bn256.NewSuite()
 	suite := pairing.NewSuiteBn256()
 	randomStream := suite.RandomStream()
 	var pks []string

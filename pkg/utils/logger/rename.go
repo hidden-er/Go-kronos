@@ -17,7 +17,6 @@ func RenameCommon(c config.CommonConfig, p party.CommonParty, path string) {
 	os.Rename(dir_send, newdir_send)
 
 	file_recv := fmt.Sprintf("%s(Received)0.0.0.0:%s.log", path, c.PortList[p.PID])
-	//log.Println(file_recv)
 	newfile_recv := fmt.Sprintf("%s(Received)node%d", path, p.PID)
 	os.Rename(file_recv, newfile_recv)
 
@@ -51,7 +50,6 @@ func RenameHonest(c config.HonestConfig, p party.HonestParty, path string) {
 	os.Rename(dir_send, newdir_send)
 
 	file_recv := fmt.Sprintf("%s(Received)0.0.0.0:%s.log", path, c.PortList[p.PID])
-	//log.Println(file_recv)
 	newfile_recv := fmt.Sprintf("%s(Received)node%d", path, p.PID)
 	os.Rename(file_recv, newfile_recv)
 

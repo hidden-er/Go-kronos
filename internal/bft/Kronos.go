@@ -22,7 +22,6 @@ func CategorizeTransactionsByInputShard(transactions []string) map[int][]string 
 
 	for _, tx := range transactions {
 		// 提取交易详情
-		//fmt.Println(tx)
 		details, err := txs.ExtractTransactionDetails(tx)
 		if err != nil {
 			fmt.Printf("Skipping invalid transaction: %v\n ", err)
@@ -74,20 +73,6 @@ func CategorizeTransactionsByOutputShard(transactions []string) (map[int][]strin
 	return crossShardTransactions, innerShardTransactions
 }
 
-/*
-有两个东西需要全程非阻塞监听,把内容放到对应Channel里：
-1:别的分片发来的 完全未处理的 本分片为输入分片的交易,也就是TXs_Inform。
-
-	收到后什么都不用干,让它们躺在TXsInformChannel里就行了.
-	主进程在每个时期(开始后不久)完成TXs_Inform的发送之后 统一收菜
-
-2:别的分片发来的 部分处理了的 本分片为输出分片的交易,也就是InputBFT_Result。
-
-	收到后验证树根聚合签名,验证默克尔树(注意有两个验证)
-	对它们进行处理,放到交易池中——若交易池中没有该交易则添加,然后把对应的输入分片标记为true
-	再把交易池中输入分片已经处理完了(输入分片元组全为true)的交易拿出来组装成InputResultTobeDoneChannel中
-	主进程在每个时期需要调用片内交易之前.统一收菜
-*/
 func TXs_Inform_Handler(p *party.HonestParty, e uint32, TXsInformChannel chan []string) {
 	var l []int
 	var Result []string
@@ -139,21 +124,14 @@ func InpufBFT_Result_Handler(p *party.HonestParty, e uint32, InputResultTobeDone
 				}
 			}
 		}
-		//fmt.Println(l, p.PID)
 		if len(l) >= int(p.M)-1 {
 			break
 		}
 	}
 
-	//fmt.Println(p.PID)
-	//txPool.PrintTxPoolDetail()
-
 	completedTransactions := txPool.CheckAndRemoveTransactions()
-	//fmt.Println(completedTransactions)
 	// 将完成的交易发送到 InputResultTobeDoneChannel
-	//if len(completedTransactions) > 0 {
 	InputResultTobeDoneChannel <- completedTransactions
-	//}
 
 	return
 }
@@ -165,8 +143,6 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 	suite := bn256.NewSuite()
 	timeChannel <- time.Now()
 	for e := uint32(1); e <= uint32(epoch); e++ {
-		//go TXs_Inform_Handler(p, e-1, TXsInformChannel)
-		//go InpufBFT_Result_Handler(p, e-1, InputResultTobeDoneChannel, txPool)
 		var txs_in []string            //放入片内共识的交易整体
 		var txs_ctx_in []string        //别的分片发来的,本分片为输入分片的交易;是放入片内共识交易的跨片部分
 		var txs_itx []string           //从inputchannel来,本分片的片内交易;是放入片内共识交易的片内部分
@@ -178,8 +154,6 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 		var txs_ctx2 map[int][]string //从片内共识来,按输出分片分类后的跨片交易
 		var txs_itx2 []string         //从片内共识来,进行分类后的片内交易
 
-		//var Txs_ctx map[int][]byte //分类后的交易转化为字节形式;建树&发送&签名&验签用的都是字节形式
-		//var Txs []byte
 		var is_coordinator bool
 
 		if (e+1)%p.N == p.SID {
@@ -211,32 +185,13 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 		txs_ctx_in = <-TXsInformChannel
 		txs_in = append(txs_in, txs_ctx_in...)
 
-		//fmt.Println("here!2", p.PID, e)
-		/*
-			select {
-			case txs_ctx_in = <-TXsInformChannel:
-				txs_in = append(txs_in, txs_ctx_in...)
-			default:
-				fmt.Println("No data in TXsInformChannel, skipping...")
-			}
-
-			select {
-			case txs_pool_finished = <-InputResultTobeDoneChannel:
-				txs_in = append(txs_in, txs_pool_finished...)
-			default:
-				fmt.Println("No data in InputResultTobeDoneChannel, skipping...")
-			}
-		*/
-
 		inputChannel := make(chan []string, 1024)
 		receiveChannel := make(chan []string, 1024)
-		//fmt.Println("txs_in:", txs_in, "\n\n\n\n\n\n\n\n\n")
 		inputChannel <- txs_in
 
 		HotStuffProcess(p, int(e), inputChannel, receiveChannel, false)
 		txs_out = <-receiveChannel
 		txs_ctx2, txs_itx2 = CategorizeTransactionsByOutputShard(txs_out)
-		//fmt.Println("txs_out:", p.PID, txs_out, "\n\n\n")
 
 		//对于片内交易和输出分片为自己的交易,直接输出,作为吞吐量计算
 		outputChannel <- txs_itx2
@@ -245,12 +200,6 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 
 		//对于跨片交易,建立默克尔树,并对树根签名
 		mktree, _ := crypto.NewMerkleTree(utils.MapToSlice(txs_ctx2, int(p.M)))
-		// fmt.Println("Shard num in txs_ctx2: ", len(utils.MapToSlice(txs_ctx2, int(p.M))))
-		//if is_coordinator == true {
-		//	fmt.Println("txs_out:", p.PID, txs_out, "\n\n\n\n\n\n\n\n\n")
-		//}
-		//fmt.Println("txs_ctx2", txs_ctx2, "\n\n\n\n\n\n\n\n\n")
-		//fmt.Println("mktree", mktree, "\n\n\n\n\n\n\n\n\n")
 		Root := mktree.GetMerkleTreeRoot()
 		sigRoot, _ := bls.Sign(suite, p.SK, Root)
 
@@ -275,8 +224,6 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 			for {
 				m := <-p.GetMessage("Sigmsg", utils.Uint32ToBytes(e))
 				payload := (core.Decapsulation("Sigmsg", m)).(*protobuf.Sigmsg)
-
-				//fmt.Println(payload.Root, Root, p.PID, m.Sender)
 
 				if !bytes.Equal(payload.Root, Root) {
 					fmt.Println("Invalid Mktree Root(Unequal Root)")
@@ -315,8 +262,6 @@ func KronosProcess(p *party.HonestParty, epoch int, itx_inputChannel chan []stri
 					Aggpk:     utils.PointToBytes(aggPubKey),
 				})
 				p.Shard_Broadcast(TXsInformMesssage, i)
-				/* res := crypto.VerifyMerkleTreeProof(Root, path, indicator, txs_ctx2[int(i)])
-				fmt.Println("Self MerkleTree verification result:", res) */
 			}
 
 		} else {

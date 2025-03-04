@@ -38,7 +38,6 @@ func main() {
 	p := party.NewHonestParty(uint32(c.N), uint32(c.F), uint32(c.M), uint32(c.PID), uint32(c.Snumber), uint32(c.SID), c.IPList, c.PortList, c.PK, c.SK, Debug)
 	p.InitReceiveChannel()
 
-	//fmt.Println(p.PID, p.ShardList)g
 	time.Sleep(time.Second * time.Duration(c.PrepareTime/10))
 
 	p.InitSendChannel()
@@ -65,19 +64,9 @@ func main() {
 	}
 
 	itxdb := fmt.Sprintf(homeDir+"/Chamael/db/inter_txs_node%d.db", p.PID)
-	// fmt.Println(itxdb)
 	db.SaveTxsToSQL(Txs, itxdb)
 	fmt.Println("Inner-Shard Transactions saved to SQLite database.")
 
-	/*
-		testMessage := core.Encapsulation("Execute", make([]byte, 1), p.PID, &protobuf.Execute{
-			Unknown: make([]byte, 1),
-		})
-		p.Send(testMessage, 0)
-		p.GetMessage("Execute", make([]byte, 1))
-	*/
-
-	//time.Sleep(time.Second * time.Duration(c.PrepareTime/10))
 	ctxdb := homeDir + "/Chamael/db/cross_txs_node" + strconv.Itoa(int(p.PID)) + ".db"
 
 	itx_inputChannel := make(chan []string, 1024)
@@ -91,9 +80,6 @@ func main() {
 		ctxs, _ := db.LoadAndDeleteTxsFromDB(ctxdb, csTxnum)
 		ctx_inputChannel <- ctxs
 	}
-
-	//go bft.MainProcess(p, inputChannel, outputChannel) //把节点独立出来,inputChannel放入Txs,OutputChannel接取
-	//go bft.MainProcess(p, c.TestEpochs, itx_inputChannel, ctx_inputChannel, outputChannel)
 
 	//go bft.HotStuffProcess(p, c.TestEpochs, itx_inputChannel, outputChannel)
 	/*for i := 1; i <= c.TestEpochs; i++ {

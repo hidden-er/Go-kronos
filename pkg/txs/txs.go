@@ -92,54 +92,6 @@ func CrossTxGenerator(size, shardNum, Rrate int, PID int, chars string) string {
 	return fmt.Sprintf("<Dummy TX: %s%s >", randomString, shardInfo)
 }
 
-/*
-func GroupAndSortTransactions(txBatchList []string) ([][]string, []string) {
-	// 创建一个 map，用于按 Output Shard 分组交易
-	groupedcTx := make(map[string][]string)
-	var groupediTx []string
-
-	// 遍历交易列表，按 Output Shard 分组
-	for _, tx := range txBatchList {
-
-		// 提取 Output Vaild 的值, 据此确定片内交易
-		// "【......Output Shard: 0, Output Valid: 1 >】那个表明输出可用性的数字后面固定跟2个字符
-		shardStart := strings.Index(tx, "Output Shard: ") + len("Output Shard: ")
-		shardEnd := len(tx) - 2
-		outputVaild := tx[shardStart:shardEnd]
-		if outputVaild[0] == '2' {
-			groupediTx = append(groupediTx, tx)
-		} else {
-			// 提取 Output Shard 的值
-			// "【......Output Shard: 0, Output Valid: 1 >】那个表明输出分片的数字后面固定跟19个字符
-			shardStart := strings.Index(tx, "Output Shard: ") + len("Output Shard: ")
-			shardEnd := len(tx) - 19
-			outputShard := tx[shardStart:shardEnd]
-
-			// 将交易添加到对应分组
-			if _, exists := groupedcTx[outputShard]; !exists {
-				groupedcTx[outputShard] = []string{}
-			}
-			groupedcTx[outputShard] = append(groupedcTx[outputShard], tx)
-		}
-	}
-
-	// 对分组的 Output Shard 进行排序
-	var sortedShards []string
-	for shard := range groupedcTx {
-		sortedShards = append(sortedShards, shard)
-	}
-	sort.Strings(sortedShards) // 按字典序对 shard 排序
-
-	// 构造最终的输出结果
-	var batchctx [][]string
-	for _, shard := range sortedShards {
-		batchctx = append(batchctx, groupedcTx[shard])
-	}
-
-	return batchctx, groupediTx
-}
-*/
-
 func ExtractTransactionDetails(tx string) (*Transaction, error) {
 	// 定义正则表达式模式
 	re := regexp.MustCompile(
