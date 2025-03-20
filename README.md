@@ -1,10 +1,8 @@
-# Chamael
-
-Go implementation of Kronos
+# Go implementation of Kronos
 
 ## 1. Usage
 
-Chamael can be run in 3 ways:
+Kronos can be run in 3 ways:
 - Local
 - All nodes in one Docker
 - One node in one Docker
@@ -40,12 +38,12 @@ go run ./cmd/configMaker/configMaker.go -config_path ./cmd/main/config_local.yam
 
 Build Docker image via Dockerfile:
 ``` bash
-docker build -t chamael:latest .
+docker build -t Kronos:latest .
 ```
 
 Start Docker:
 ``` bash
-docker run -it --rm chamael:latest 4 3 1000 1
+docker run -it --rm Kronos:latest 4 3 1000 1
 ```
 
 ### One node in one Docker
